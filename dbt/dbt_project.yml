@@ -1,0 +1,10 @@
+name: clickhouse_dev
+version: "1.0.0"
+profile: clickhouse_dev  # must match the top key in profiles.yml
+model-paths: ["models"]
+target-path: "target"
+clean-targets: ["target"]
+
+models:
+  clickhouse_dev:
+    +materialized: table
