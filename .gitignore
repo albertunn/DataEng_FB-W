@@ -1,1 +1,8 @@
-#.env
+.env
+dbt/.user.yml
+*.pyc
+*.csv
+airflow/dags/__pycache__/
+airflow/logs/
+dbt/logs/
+dbt/target/
