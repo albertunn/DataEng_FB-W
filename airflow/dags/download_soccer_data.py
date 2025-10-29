@@ -1,5 +1,6 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from airflow.operators.dagrun_operator import TriggerDagRunOperator
 from datetime import datetime
 from kaggle_downloader import download_kaggle_dataset
 from clickhouse_loader import load_to_clickhouse
@@ -21,6 +22,11 @@ with DAG(
             "data_dir": "/opt/airflow/data/espn_soccer",
             "run_date": "{{ ds }}"
         },
+    )
+    trigger_weather_dag = TriggerDagRunOperator(
+    task_id='trigger_weather_fetch',
+    trigger_dag_id='fetch_match_weather',
+    wait_for_completion=False,
 )
 
-download_task >> load_task
+download_task >> load_task >> trigger_weather_dag

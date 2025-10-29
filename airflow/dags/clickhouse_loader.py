@@ -23,13 +23,15 @@ def load_to_clickhouse(data_dir, run_date):
             team_location String
         ) ENGINE = MergeTree() ORDER BY team_id
         """)
-        
+
         client.execute("""
         CREATE TABLE IF NOT EXISTS DimVenue (
             venue_id UInt32,
             venue_name String,
             city String,
-            country String
+            country String,
+            latitude Nullable(Float32),
+            longitude Nullable(Float32)
         ) ENGINE = MergeTree() ORDER BY venue_id
         """)
         
@@ -91,6 +93,8 @@ def load_to_clickhouse(data_dir, run_date):
         # Load DimVenue
         dimvenue = venues[["venueId", "fullName", "city", "country"]].copy()
         dimvenue.columns = ["venue_id", "venue_name", "city", "country"]
+        dimvenue["latitude"] = None
+        dimvenue["longitude"] = None
         dimvenue = dimvenue[~dimvenue["venue_id"].isin(existing_venues)]
         if len(dimvenue) > 0:
             dimvenue_data = [tuple(x) for x in dimvenue.values]

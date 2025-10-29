@@ -1,7 +1,7 @@
 FROM apache/airflow:2.8.1
 
 USER airflow
-RUN pip install --no-cache-dir kaggle clickhouse-driver pandas
+RUN pip install --no-cache-dir kaggle clickhouse-driver pandas numpy
 
 COPY --chown=airflow:root requirements.txt /requirements.txt
 RUN pip install --no-cache-dir -r /requirements.txt
