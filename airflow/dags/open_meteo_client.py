@@ -33,11 +33,9 @@ def fetch_weather_for_match(match_id, date, latitude, longitude):
             print(f"Warning: No response for match {match_id} on {start_date}")
             return None
 
-        # Process first (and only) location
         response = responses[0]
         hourly = response.Hourly()
         
-        # The order of variables needs to be the same as requested in 'hourly'
         hourly_data = {
             "temperature_2m": hourly.Variables(0).ValuesAsNumpy(),
             "precipitation": hourly.Variables(1).ValuesAsNumpy(),
@@ -46,7 +44,6 @@ def fetch_weather_for_match(match_id, date, latitude, longitude):
             "wind_speed_10m": hourly.Variables(4).ValuesAsNumpy(),
         }
 
-        # Create the index of times
         time_index = pd.date_range(
             start = pd.to_datetime(hourly.Time(), unit = "s", utc = True),
             end =  pd.to_datetime(hourly.TimeEnd(), unit = "s", utc = True),
@@ -57,16 +54,12 @@ def fetch_weather_for_match(match_id, date, latitude, longitude):
         hourly_df = pd.DataFrame(data = hourly_data, index = time_index)
         
         # Find the hour closest to the actual match time.
-        # The input 'date' (from matchData) is assumed to be the full match time.
-        # We localize it to UTC for comparison with the hourly_df index, which is UTC-aware data from the API.
         target_time = pd.to_datetime(date).tz_localize('UTC', nonexistent='NaT')
         
-        # Get the row closest to the target time
         time_diff =np.abs(hourly_df.index - target_time)
         closest_time_label = time_diff.argmin()
         representative_hour = hourly_df.iloc[[closest_time_label]]
         
-        # Prepare result for ClickHouse
         result = representative_hour.iloc[0].to_dict()
         result['match_id'] = match_id
         
@@ -75,10 +68,8 @@ def fetch_weather_for_match(match_id, date, latitude, longitude):
              if pd.isna(result[key]):
                 result[key] = None
              elif isinstance(result[key], (float, int)):
-                 # Keep standard floats/ints
                  pass
              else:
-                 # Convert numpy types to native Python types
                  result[key] = result[key].item() if hasattr(result[key], 'item') else result[key]
 
 
@@ -108,7 +99,6 @@ def fetch_historical_weather(matches_with_coords_df):
         if weather_data:
             results.append(weather_data)
             
-    # Convert list of dictionaries back to a DataFrame
     if not results:
         return pd.DataFrame()
         

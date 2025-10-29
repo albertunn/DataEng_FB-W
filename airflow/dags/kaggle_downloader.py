@@ -5,7 +5,7 @@ from kaggle.api.kaggle_api_extended import KaggleApi
 def download_kaggle_dataset():
     api = KaggleApi()
     api.authenticate()
-    print("✅ Authentication successful!")
+    print("Authentication successful!")
 
     dataset = "excel4soccer/espn-soccer-data"
     
