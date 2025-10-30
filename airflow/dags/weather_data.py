@@ -1,10 +1,10 @@
 from datetime import timedelta, datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from airflow.sensors.external_task import ExternalTaskSensor 
 import pandas as pd
 from clickhouse_driver import Client
 from geopy.geocoders import Nominatim
+from geopy.extra.rate_limiter import RateLimiter
 import time
 import logging
 
@@ -21,168 +21,180 @@ default_args = {
 }
 
 def geocode_unresolved_venues():
-    """
-    Uses geopy (Nominatim) to find coordinates for venues where latitude is NULL.
-    CRITICAL CHANGE: This now prioritizes the top 50 most-used venues 
-    to quickly unblock the majority of the match data.
-    """
     log.info("Starting geocoding process for unresolved venues...")
-    
-    client = Client(host="clickhouse-server")
-    client.execute("USE matchData")
-    
-    geolocator = Nominatim(user_agent="espn_soccer_airflow_dag_v2")
 
-    # Batch size for geocoding to manage the 1s latency so that the task doesnt take too much time
-    VENUE_BATCH_SIZE = 50 
+    client = None
+    updates_count = 0
 
-    # 1. Select the top N most-used venues that are missing coordinates (latitude IS NULL)
-    query = f"""
-    SELECT
-        v.venue_id, v.venue_name, v.city, v.country
-    FROM DimVenue v
-    JOIN MatchFact m ON v.venue_id = m.venue_id
-    WHERE v.latitude IS NULL
-    GROUP BY v.venue_id, v.venue_name, v.city, v.country
-    ORDER BY count() DESC  -- Prioritize by most frequently used venues
-    LIMIT {VENUE_BATCH_SIZE}
-    """
-    
-    unresolved_venues = client.execute(query)
-    
-    if not unresolved_venues:
-        log.info("No venues found requiring geocoding. Exiting.")
-        return
+    try:
+        client = Client(host="clickhouse-server")
+        client.execute("USE matchData")
 
-    log.info(f"Found {len(unresolved_venues)} venues to geocode in this run.")
-    
-    for venue_id, venue_name, city, country in unresolved_venues:
-        location_query = f"{venue_name}, {city}, {country}"
+        geolocator = Nominatim(user_agent="espn_soccer_airflow_dag_v2", timeout=10)
+        geocode = RateLimiter(geolocator.geocode, min_delay_seconds=1) 
         
-        try:
-            # Respecting the Nominatim rate limit (1 request per second max)
-            time.sleep(1) 
-            
-            location = geolocator.geocode(location_query, timeout=10)
-            
-            if location:
-                lat = location.latitude
-                lon = location.longitude
-                log.info(f"Geocoded Venue ID {venue_id}: {city} -> ({lat}, {lon})")
-                
-                # Update DimVenue in ClickHouse
-                client.execute(f"""
-                ALTER TABLE DimVenue UPDATE latitude = {lat}, longitude = {lon}
-                WHERE venue_id = {venue_id} SETTINGS mutations_sync = 1
-                """)
-            else:
-                log.warning(f"Could not geocode venue ID {venue_id} for '{location_query}'")
-                try:
-                    print(location, location.latitude, location.longitude)
-                except:
-                    pass
-        except Exception as e:
-            log.error(f"FATAL Error geocoding venue ID {venue_id}: {e}")
-            time.sleep(10) 
-            break 
-            
-    client.disconnect()
-    log.info("Geocoding task complete.")
+        VENUE_BATCH_SIZE = 50
+        unresolved = client.execute(f"""
+            SELECT v.venueId, v.fullName, v.city, v.country
+            FROM bronze_venues v
+            JOIN bronze_fixtures f ON v.venueId = f.venueId
+            WHERE v.latitude IS NULL
+            GROUP BY v.venueId, v.fullName, v.city, v.country
+            ORDER BY count() DESC
+            LIMIT {VENUE_BATCH_SIZE}
+        """)
+
+        if not unresolved:
+            log.info("No venues found requiring geocoding. Exiting.")
+            return
+
+        log.info(f"Found {len(unresolved)} venues to geocode in this run.")
+
+        for venue_id, venue_name, city, country in unresolved:
+            q_parts = [
+                city.strip() if city and city.lower() != "none" else None,
+                country.strip() if country and country.lower() != "none" else None,
+            ]
+            q = ", ".join(filter(None, q_parts))
+            try:
+                loc = geocode(q, language="en")
+                if loc:
+                    lat = float(loc.latitude)
+                    lon = float(loc.longitude)
+                    
+                    client.execute(f"""
+                        ALTER TABLE bronze_venues
+                        UPDATE latitude = {lat}, longitude = {lon}
+                        WHERE venueId = '{str(venue_id)}'
+                        SETTINGS mutations_sync = 1
+                    """)
+                    updates_count += 1
+                    log.info(f"Geocoded and updated {venue_id}: {q} -> ({lat}, {lon})")
+                else:
+                    log.warning(f"Could not geocode venue ID {venue_id} for '{q}'")
+            except Exception as e:
+                log.error(f"Error executing update for venue ID {venue_id}: {e}")
+                time.sleep(5)
+                continue
+        
+        log.info(f"Successfully updated {updates_count} venues.")
+
+    except Exception as e:
+        log.error(f"A critical error occurred during geocoding: {e}")
+        raise
     
+    finally:
+        if client:
+            client.disconnect()
+            log.info("ClickHouse client disconnected.")
+
+    log.info("Geocoding task complete.")
+
 
 def fetch_and_load_weather_data(data_dir, **context):
-    """
-    2. Identifies up to 600 fixtures without weather data. (API gives 600 queries per minute)
-    3. Calls the Open-Meteo API to get weather data.
-    4. Inserts results into WeatherFact and updates MatchFact.
-    """
-    
     try:
         import open_meteo_client as omc
     except ImportError:
-        log.error("ERROR: open_meteo_client.py not found. Skipping execution.")
-        return 
+        raise ImportError("ERROR: open_meteo_client.py is required but not found.")
 
-    BATCH_SIZE = 600 
-    
-    log.info("Connecting to ClickHouse and identifying fixtures for weather lookup...")
-    client = Client(host="clickhouse-server")
-    client.execute("USE matchData")
+    BATCH_SIZE = 600 # opean_meteo minute limit
+    client = None
+    try:
+        client = Client(host="clickhouse-server")
+        client.execute("USE matchData")
 
-    # Select matches needing weather data, joining with DimVenue to get coordinates
-    # Only select matches where coordinates are already available
-    query = f"""
-    SELECT
-        m.match_id, m.date_key, v.latitude, v.longitude
-    FROM MatchFact m
-    JOIN DimVenue v ON m.venue_id = v.venue_id
-    WHERE m.weather_id = 0 
-      AND m.venue_id IS NOT NULL 
-      AND v.latitude IS NOT NULL
-    ORDER BY m.date_key ASC
-    LIMIT {BATCH_SIZE}
-    """
-    
-    matches_to_fetch = client.execute(query)
-    
-    if not matches_to_fetch:
-        log.info("No matches found requiring weather data with coordinates. Exiting.")
-        return
-        
-    log.info(f"Found {len(matches_to_fetch)} matches to process in this batch.")
-
-    matches_with_coords = pd.DataFrame(matches_to_fetch, columns=['match_id', 'date_key', 'latitude', 'longitude'])
-    
-    log.info(f"Fetching weather for {len(matches_with_coords)} matches from Open-Meteo")
-    
-    weather_results_df = omc.fetch_historical_weather(matches_with_coords)
-    
-    if not weather_results_df.empty:
-        
+        # Ensure target table exists
         client.execute("""
-        CREATE TABLE IF NOT EXISTS DimWeather (
-            weather_id UInt32,
-            temperature_2m Nullable(Float32),
-            precipitation Nullable(Float32),
-            rain Nullable(Float32),
-            snowfall Nullable(Float32),
-            wind_speed_10m Nullable(Float32)
-        ) ENGINE = MergeTree() ORDER BY weather_id
+            CREATE TABLE IF NOT EXISTS bronze_weather
+            (
+              eventId String,
+              date Date,
+              timestamp_utc DateTime('UTC'),
+              latitude Float64,
+              longitude Float64,
+              temperature_2m Nullable(Float32),
+              precipitation Nullable(Float32),
+              rain Nullable(Float32),
+              snowfall Nullable(Float32),
+              wind_speed_10m Nullable(Float32)
+            )
+            ENGINE = ReplacingMergeTree()
+            ORDER BY (eventId, timestamp_utc)
         """)
+
+        rows = client.execute(f"""
+            SELECT f.eventId, f.date, v.latitude, v.longitude
+            FROM bronze_fixtures f
+            JOIN bronze_venues v ON f.venueId = v.venueId
+            WHERE f.hasWeather IS NULL
+              AND v.latitude IS NOT NULL
+            ORDER BY f.date ASC
+            LIMIT {BATCH_SIZE}
+        """)
+
+        if not rows:
+            log.info("No matches found requiring weather data with coordinates. Exiting.")
+            return
+
+        matches_df = pd.DataFrame(rows, columns=['eventId', 'date', 'latitude', 'longitude'])
+        log.info(f"Fetching weather for {len(matches_df)} matches from Open-Meteo...")
+
+        weather_df = omc.fetch_weather_bronze(matches_df)
+        if weather_df.empty:
+            log.info("Weather API returned no rows. Exiting.")
+            return
+
+        to_insert = [
+            (
+                str(r["eventId"]),
+                pd.Timestamp(r["date"]).date(),
+                pd.Timestamp(r["timestamp_utc"]).to_pydatetime(),
+                float(r["latitude"]),
+                float(r["longitude"]),
+                float(r["temperature_2m"]) if pd.notnull(r["temperature_2m"]) else None,
+                float(r["precipitation"]) if pd.notnull(r["precipitation"]) else None,
+                float(r["rain"]) if pd.notnull(r["rain"]) else None,
+                float(r["snowfall"]) if pd.notnull(r["snowfall"]) else None,
+                float(r["wind_speed_10m"]) if pd.notnull(r["wind_speed_10m"]) else None,
+            )
+            for _, r in weather_df.iterrows()
+        ]
+
+        client.execute(
+            """
+            INSERT INTO bronze_weather (
+                eventId, date, timestamp_utc, latitude, longitude,
+                temperature_2m, precipitation, rain, snowfall, wind_speed_10m
+            ) VALUES
+            """,
+            to_insert,
+        )
+        log.info(f"Inserted {len(to_insert)} hourly rows into bronze_weather")
+
+        # Mark fixtures as having weather
+        event_ids_done = matches_df["eventId"].unique().tolist()
+        if event_ids_done:
+            CHUNK = 1000
+            for i in range(0, len(event_ids_done), CHUNK):
+                ids_csv = ",".join([f"'{str(x)}'" for x in event_ids_done[i:i+CHUNK]])
+                client.execute(f"""
+                    ALTER TABLE bronze_fixtures
+                    UPDATE hasWeather = 1
+                    WHERE eventId IN ({ids_csv})
+                    SETTINGS mutations_sync = 1
+                """)
+            log.info(f"Updated hasWeather=1 for {len(event_ids_done)} fixtures")
+
+    except Exception as e:
+        log.error(f"A critical error occurred during weather data processing: {e}")
+        raise 
         
-    result = client.execute("SELECT max(weather_id) FROM DimWeather")
-    last_id = result[0][0] if result and result[0][0] is not None else 0
-    next_id = last_id + 1
+    finally:
+        if client:
+            client.disconnect()
+            log.info("ClickHouse client disconnected.")
 
-    dim_weather_data = []
-    match_weather_map = {}
-
-    for _, row in weather_results_df.iterrows():
-        weather_id = next_id
-        next_id += 1
-
-        dim_weather_data.append((
-            int(weather_id),
-            row.get('temperature_2m'),
-            row.get('precipitation'),
-            row.get('rain'),
-            row.get('snowfall'),
-            row.get('wind_speed_10m') or row.get('windspeed_10m'),
-        ))
-
-        match_weather_map[int(row['match_id'])] = weather_id
-
-    client.execute("INSERT INTO DimWeather VALUES", dim_weather_data)
-
-    for match_id, weather_id in match_weather_map.items():
-        client.execute(f"""
-        ALTER TABLE MatchFact UPDATE weather_id = {weather_id}
-        WHERE match_id = {match_id} SETTINGS mutations_sync = 1
-        """)
-
-    log.info(f"Inserted {len(dim_weather_data)} records into DimWeather")
-    client.disconnect()
-
+    log.info("Weather ingestion complete.")
 
 
 with DAG(
@@ -198,7 +210,7 @@ with DAG(
         task_id='geocode_venues',
         python_callable=geocode_unresolved_venues,
     )
-    
+
     fetch_weather_task = PythonOperator(
         task_id='fetch_and_load_weather_data',
         python_callable=fetch_and_load_weather_data,

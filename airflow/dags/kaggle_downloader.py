@@ -16,7 +16,7 @@ def download_kaggle_dataset():
     # Clean up temp directory if it exists
     if os.path.exists(temp_dir):
         shutil.rmtree(temp_dir)
-        print(f"🧹 Cleaned old temp directory")
+        print(f"Cleaned old temp directory")
     
     os.makedirs(temp_dir, exist_ok=True)
     os.makedirs(final_dir, exist_ok=True)
@@ -67,13 +67,13 @@ def download_kaggle_dataset():
             print(f"  ✗ {filename} not found at {src}")
     
     # Clean up entire temp directory
-    print(f"\n🧹 Cleaning up temp directory...")
+    print(f"\nCleaning up temp directory...")
     shutil.rmtree(temp_dir)
-    print(f"✅ Temp directory deleted")
+    print(f"Temp directory deleted")
     
     
     print("\n" + "="*80)
-    print(f"✅ SUCCESS: Moved {len(moved_files)} files")
+    print(f"SUCCESS: Moved {len(moved_files)} files")
     print("="*80 + "\n")
     
     return moved_files
