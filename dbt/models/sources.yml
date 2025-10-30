@@ -1,0 +1,16 @@
+version: 2
+
+sources:
+  - name: raw_data
+    schema: matchData
+    tables:
+      - name: bronze_fixtures
+        description: "Raw ESPN fixture data, one row per match."
+      - name: bronze_teamStats
+        description: "Detailed match statistics per team (fouls, possession, shots, cards, etc.)."
+      - name: bronze_teams
+        description: "Information about football teams,"
+      - name: bronze_venues
+        description: "Stadium and venue details,"
+      - name: bronze_weather
+        description: "Hourly weather observations (temperature, precipitation, wind speed) tied to coordinates."

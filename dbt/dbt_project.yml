@@ -7,4 +7,14 @@ clean-targets: ["target"]
 
 models:
   clickhouse_dev:
-    +materialized: table
+    +materialized: view
+    staging:
+      +schema: 'staging'
+      +materialized: 'view' 
+
+    marts:                     
+      +schema: 'marts'          
+      +materialized: 'table'    
+
+      fact_match:
+        +materialized: 'incremental'
