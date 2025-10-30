@@ -16,3 +16,5 @@ Access dbt from *docker compose exec dbt bash* or through Docker Desktop dbt con
 
 Then run dbt commands directly inside the container: *dbt run*.
 Directly from the host (without entering the container): *docker exec -it dbt dbt run*.
+
+To start an interactive SQL session, run: *docker exec -it clickhouse-server clickhouse-client*.
