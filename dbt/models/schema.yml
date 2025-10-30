@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: fact_match
+    columns:
+      - name: match_id
+        tests:
+          - unique
+          - not_null
+      
+      - name: team_key_home
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_team')
+              field: team_key
+
+      - name: team_key_away
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_team')
+              field: team_key
+        
+      
+      
