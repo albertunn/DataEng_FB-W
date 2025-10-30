@@ -13,3 +13,6 @@ KAGGLE_KEY={token}
 Airflow is accedssible at http://localhost:8080
 
 Access dbt from *docker compose exec dbt bash* or through Docker Desktop dbt container terminal
+
+Then run dbt commands directly inside the container: *dbt run*.
+Directly from the host (without entering the container): *docker exec -it dbt dbt run*.
