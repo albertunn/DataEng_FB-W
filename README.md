@@ -10,7 +10,7 @@ For Kaggle downloads to work, you need to write kaggle credentials into the .env
 KAGGLE_USERNAME={username}
 KAGGLE_KEY={token}
 
-Airflow is accedssible at http://localhost:8080
+Airflow is accessible at http://localhost:8080
 
 You can enter the dbt container shell with: *docker compose exec dbt bash* or through Docker Desktop dbt container terminal.
 
