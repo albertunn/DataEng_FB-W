@@ -71,10 +71,6 @@ FROM fixtures AS f
 LEFT JOIN team_stats_agg AS ts  
     ON f.event_id = ts.event_id  
 
-LEFT JOIN {{ source('raw_data', 'bronze_weather') }} w
-    ON f.event_id = CAST(w.eventId AS String)
-    AND toStartOfHour(w.timestamp_utc) = toStartOfHour(f.match_datetime)
-
 LEFT JOIN {{ ref('dim_date') }} AS dd 
     ON halfMD5(toString(f.match_datetime) || '|' || toString(f.venue_id)) = dd.date_key
 
@@ -82,9 +78,10 @@ LEFT JOIN {{ ref('dim_venue') }} AS dv
     ON f.venue_id = dv.venue_id
 
 LEFT JOIN {{ ref('dim_weather') }} AS dw 
-    ON halfMD5(
-        toString(w.latitude) || '|' || toString(w.longitude) || '|' || toString(w.timestamp_utc)
-    ) = dw.weather_key 
+ON dw.weather_key = halfMD5(
+    -- Loome sama võtme, mis on dim_weather mudelis: eventId + Mängu aja tunni alguspunkt
+    toString(f.event_id) || '|' || toString(toStartOfHour(f.match_datetime))
+)
     
 LEFT JOIN {{ ref('dim_team') }} AS th 
     ON f.home_team_id = th.team_id
