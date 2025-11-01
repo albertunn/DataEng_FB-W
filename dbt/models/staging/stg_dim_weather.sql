@@ -1,4 +1,4 @@
--- models/dimensions/dim_weather.sql 
+-- models/staging/stg_dim/weather.sql
 
 {{ config(materialized='view') }}
 
