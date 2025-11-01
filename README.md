@@ -10,7 +10,7 @@ The project uses the following data sources:
 
 | Source | Description | Link |
 |--------|-------------|------|
-| **Kaggle Football Datasets** | Match results, team info, scores, etc. | [Kaggle Dataset](https://www.kaggle.com/datasets/excel4soccer/espn-soccer-data/data) |
+| **Kaggle Football Dataset** | Match results, team info, scores, etc. | [Kaggle Dataset](https://www.kaggle.com/datasets/excel4soccer/espn-soccer-data/data) |
 | **Open-Meteo API** | Weather data including temperature, precipitation, wind speed, snowfall, etc. | [Open-Meteo API](https://open-meteo.com/) |
 
 
