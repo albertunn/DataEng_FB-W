@@ -8,10 +8,11 @@ Project investigates how **weather conditions influence football match outcomes*
 ## Data Sources
 The project uses the following data sources:
 
-| Source | Description |
-|--------|-------------|
-| Kaggle football datasets | Match results, team info, scores, etc. |
-| Open-Meteo API | Weather data including temperature, precipitation, wind speed, snowfall, etc. |
+| Source | Description | Link |
+|--------|-------------|------|
+| **Kaggle Football Datasets** | Match results, team info, scores, etc. | [Kaggle Dataset](https://www.kaggle.com/datasets/excel4soccer/espn-soccer-data/data) |
+| **Open-Meteo API** | Weather data including temperature, precipitation, wind speed, snowfall, etc. | [Open-Meteo API](https://open-meteo.com/) |
+
 
 ---
 
