@@ -1,0 +1,65 @@
+version: 2
+
+models:
+  - name: dim_date 
+    description: "The final Date Dimension table, sourced directly from stg_dim_date."
+    columns:
+      - name: date_key 
+      - name: match_date
+      - name: match_time
+
+  - name: dim_team 
+    description: "The final Team Dimension table, providing team attributes for both home and away teams."
+    columns:
+      - name: team_key
+      - name: team_id
+      - name: team_name
+      - name: team_location
+
+  - name: dim_venue
+    description: "The final Venue Dimension table, containing details for all match locations."
+    columns:
+      - name: venue_key
+      - name: venue_id
+      - name: venue_name
+      - name: city
+      - name: country
+
+  - name: dim_weather
+    description: "The final Weather Dimension table, it contains one unique hourly weather record per match event."
+    columns:
+      - name: weather_key
+      - name: latitude
+      - name: longitude
+      - name: weather_date
+      - name: weather_time
+      - name: temperature
+      - name: precipitation
+      - name: rainfall
+      - name: snowfall
+      - name: wind_speed
+
+  - name: fact_match 
+    description: "The core Fact table of the data warehouse. It records every match event, linking five dimension keys and storing all statistical information about each match."
+    columns:
+      - name: match_id
+      - name: date_key
+      - name: venue_key
+      - name: weather_key
+      - name: home_team_key
+      - name: away_team_key
+      - name: home_goals
+      - name: away_goals
+      - name: home_shootout_score
+      - name: away_shootout_score
+      - name: attendance
+      - name: home_fouls
+      - name: away_fouls
+      - name: home_yellow_cards
+      - name: home_red_cards
+      - name: away_yellow_cards
+      - name: away_red_cards
+      - name: home_possession_pct
+      - name: away_possession_pct
+      - name: home_corners
+      - name: away_corners
