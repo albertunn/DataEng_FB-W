@@ -1,6 +1,6 @@
 {{ config(materialized='view') }}
 
-SELECT 
+SELECT
     halfMD5(
         toString(latitude) || '|' || toString(longitude) || '|' || toString(timestamp_utc)
     ) AS weather_key,
@@ -8,6 +8,7 @@ SELECT
     latitude as latitude, 
     longitude as longitude,
 
+    timestamp_utc,
     date as weather_date,
     formatDateTime(timestamp_utc, '%H:%M:%S') AS weather_time, 
     
@@ -18,3 +19,4 @@ SELECT
     round(wind_speed_10m, 3) AS wind_speed
 
 FROM {{ source('raw_data', 'bronze_weather') }}
+

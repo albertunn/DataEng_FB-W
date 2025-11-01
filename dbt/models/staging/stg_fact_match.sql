@@ -5,11 +5,10 @@ WITH fixtures AS (
     SELECT
         CAST(eventId AS String) AS event_id,
         CAST(date AS DateTime) AS match_datetime, 
-        CAST(venueId AS String) AS venue_id,
-        CAST(homeTeamId AS String) AS home_team_id,
-        CAST(awayTeamId AS String) AS away_team_id,
+        CAST(venueId AS Int32) AS venue_id,
+        CAST(homeTeamId AS Int32) AS home_team_id,
+        CAST(awayTeamId AS Int32) AS away_team_id,
         
-
         CAST(NULLIF(attendance, '') AS Nullable(Int32)) AS attendance,
         CAST(NULLIF(homeTeamScore, '') AS Nullable(Int32)) AS home_goals,
         CAST(NULLIF(awayTeamScore, '') AS Nullable(Int32)) AS away_goals,
@@ -44,30 +43,29 @@ team_stats_agg AS (
 SELECT
     halfMD5(toString(f.event_id)) AS match_id, 
 
-    halfMD5(toString(f.match_datetime) || '|' || toString(f.venue_id)) AS date_key, 
-    halfMD5(toString(f.home_team_id)) AS team_key_home, 
-    halfMD5(toString(f.away_team_id)) AS team_key_away, 
-    halfMD5(toString(f.venue_id)) AS venue_key, 
-    
-    halfMD5(toString(w.latitude) || '|' || toString(w.longitude) || '|' || toString(w.timestamp_utc)) AS weather_key,
+    dd.date_key,
+    dv.venue_key,
+    dw.weather_key,
 
+    th.team_key AS home_team_key,
+    ta.team_key AS away_team_key,
     
-    f.home_goals,
-    f.away_goals,
-    f.home_shootout_score,
-    f.away_shootout_score,
-    f.attendance,
+    MAX(f.home_goals) AS home_goals,
+    MAX(f.away_goals) AS away_goals,
+    MAX(f.home_shootout_score) AS home_shootout_score,
+    MAX(f.away_shootout_score) AS away_shootout_score,
+    MAX(f.attendance) AS attendance,
 
-    ts.home_fouls,
-    ts.away_fouls,
-    ts.home_yellow_cards,
-    ts.home_red_cards,
-    ts.away_yellow_cards,
-    ts.away_red_cards,
-    ts.home_possession_pct,
-    ts.away_possession_pct,
-    ts.home_corners,
-    ts.away_corners
+    MAX(ts.home_fouls) AS home_fouls,
+    MAX(ts.away_fouls) AS away_fouls,
+    MAX(ts.home_yellow_cards) AS home_yellow_cards,
+    MAX(ts.home_red_cards) AS home_red_cards,
+    MAX(ts.away_yellow_cards) AS away_yellow_cards,
+    MAX(ts.away_red_cards) AS away_red_cards,
+    MAX(ts.home_possession_pct) AS home_possession_pct,
+    MAX(ts.away_possession_pct) AS away_possession_pct,
+    MAX(ts.home_corners) AS home_corners,
+    MAX(ts.away_corners) AS away_corners
 
 FROM fixtures AS f
 LEFT JOIN team_stats_agg AS ts  
@@ -75,4 +73,30 @@ LEFT JOIN team_stats_agg AS ts
 
 LEFT JOIN {{ source('raw_data', 'bronze_weather') }} w
     ON f.event_id = CAST(w.eventId AS String)
-    AND w.timestamp_utc = toStartOfHour(f.match_datetime)
+    AND toStartOfHour(w.timestamp_utc) = toStartOfHour(f.match_datetime)
+
+LEFT JOIN {{ ref('dim_date') }} AS dd 
+    ON halfMD5(toString(f.match_datetime) || '|' || toString(f.venue_id)) = dd.date_key
+
+LEFT JOIN {{ ref('dim_venue') }} AS dv 
+    ON f.venue_id = dv.venue_id
+
+LEFT JOIN {{ ref('dim_weather') }} AS dw 
+    ON halfMD5(
+        toString(w.latitude) || '|' || toString(w.longitude) || '|' || toString(w.timestamp_utc)
+    ) = dw.weather_key 
+    
+LEFT JOIN {{ ref('dim_team') }} AS th 
+    ON f.home_team_id = th.team_id
+    
+LEFT JOIN {{ ref('dim_team') }} AS ta 
+    ON f.away_team_id = ta.team_id
+
+GROUP BY
+    match_id, 
+    dd.date_key,
+    dv.venue_key,
+    dw.weather_key,
+    home_team_key,
+    away_team_key
+    

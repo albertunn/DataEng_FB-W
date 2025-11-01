@@ -8,14 +8,14 @@ models:
           - unique
           - not_null
       
-      - name: team_key_home
+      - name: home_team_key
         tests:
           - not_null
           - relationships:
               to: ref('dim_team')
               field: team_key
 
-      - name: team_key_away
+      - name: away_team_key
         tests:
           - not_null
           - relationships:
