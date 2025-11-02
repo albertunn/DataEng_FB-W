@@ -79,5 +79,7 @@ While Airflow handles orchestration, it is possible to use dbt manually as well.
 | **2. Run Models** | `docker exec -it dbt dbt run` | Builds all staging and mart models. |
 | **3. Run Tests** | `docker exec -it dbt dbt test` | Executes data quality tests. 
 
+## Screenshots of Airflow and dbt DAGS
 
+## Results of the Example Analytical Queries from Project 1
 
