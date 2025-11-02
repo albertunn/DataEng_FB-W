@@ -43,11 +43,36 @@ models:
     description: "The core Fact table of the data warehouse. It records every match event, linking five dimension keys and storing all statistical information about each match."
     columns:
       - name: match_id
+        description: "Unique identifier for each match."
+        tests:
+          - unique
+          - not_null
+
       - name: date_key
+        description: "Foreign key linking to the Date Dimension."
+      
       - name: venue_key
+        description: "Foreign key linking to the Venue Dimension."
+      
       - name: weather_key
+        description: "Foreign key linking to the Weather Dimension."
+
       - name: home_team_key
+        description: "Foreign key linking to the home team."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_team')
+              field: team_key
+
       - name: away_team_key
+        description: "Foreign key linking to the away team."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_team')
+              field: team_key
+
       - name: home_goals
       - name: away_goals
       - name: home_shootout_score
