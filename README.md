@@ -87,3 +87,12 @@ While Airflow handles orchestration, it is possible to use dbt manually as well.
 
 ## Results of the Example Analytical Queries from Project 1
 
+1. Is the variability of match outcomes higher in extreme weather conditions (e.g, very hot vs. very cold, strong wind, heavy rain)?
+
+
+2. Are certain teams more resilient to difficult weather conditions?
+3. How much does attendance depend on the weather conditions?
+4. Are home teams more/less affected by extreme weather?
+5. Does the number of fouls committed depend on weather conditions?
+6. Does bad weather impact penalty shootouts?
+
