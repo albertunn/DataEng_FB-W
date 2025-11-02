@@ -132,4 +132,5 @@ fouls_commited.sql
 8. #### Does bad weather impact penalty shootouts?
 penalty.sql
 
-<img width="946" height="259" alt="test_penalty_results" src="https://github.com/user-attachments/assets/b047fb66-2769-44a3-b07f-a85522a43871" />
+<img width="1632" height="273" alt="575650483_1323332595663169_7199510167246905563_n" src="https://github.com/user-attachments/assets/b33a4ede-aae2-4587-8167-dbe9aaa5a05d" />
+
