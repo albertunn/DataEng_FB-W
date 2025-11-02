@@ -86,13 +86,24 @@ While Airflow handles orchestration, it is possible to use dbt manually as well.
 ---
 
 ## Results of the Example Analytical Queries from Project 1
+Queries can be found from the Updated SQL Queries folder.
 
-1. Is the variability of match outcomes higher in extreme weather conditions (e.g, very hot vs. very cold, strong wind, heavy rain)?
+1. #### Is the variability of match outcomes higher in extreme weather conditions (e.g, very hot vs. very cold, strong wind, heavy rain)?
+match_outcome_variability_rain.sql, match_outcome_variability_wind.sql, match_outcome_variability_temp.sql
+
+2. #### Are certain teams more resilient to difficult weather conditions?
+team.resilience.sql
+
+3. #### How much does attendance depend on the weather conditions?
+attendance_rain.sql
+  
+4. #### Are home teams more/less affected by extreme weather?
+home_win_rain.sql 
+   
+6. #### Does the number of fouls committed depend on weather conditions?
+fouls_commited.sql
 
 
-2. Are certain teams more resilient to difficult weather conditions?
-3. How much does attendance depend on the weather conditions?
-4. Are home teams more/less affected by extreme weather?
-5. Does the number of fouls committed depend on weather conditions?
-6. Does bad weather impact penalty shootouts?
 
+8. #### Does bad weather impact penalty shootouts?
+penalty.sql
