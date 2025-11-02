@@ -99,19 +99,37 @@ Queries can be found from the Updated SQL Queries folder.
 1. #### Is the variability of match outcomes higher in extreme weather conditions (e.g, very hot vs. very cold, strong wind, heavy rain)?
 match_outcome_variability_rain.sql, match_outcome_variability_wind.sql, match_outcome_variability_temp.sql
 
+<img width="953" height="294" alt="test_variability_rain" src="https://github.com/user-attachments/assets/898ebf81-ea36-4dc3-88f7-1d1c7312b448" />
+
+<img width="954" height="271" alt="test_variability_wind" src="https://github.com/user-attachments/assets/0cf15263-b8e1-4b85-8330-381da51462f3" />
+
+<img width="956" height="269" alt="test_variability_temp" src="https://github.com/user-attachments/assets/c211ace8-2dd7-4c63-b4d1-aed8872af155" />
+
+
 2. #### Are certain teams more resilient to difficult weather conditions?
 team.resilience.sql
 
+<img width="713" height="482" alt="test_resilience" src="https://github.com/user-attachments/assets/fa991251-d6b1-4159-a24b-6994be124d41" />
+
+
 3. #### How much does attendance depend on the weather conditions?
 attendance_rain.sql
-  
+
+<img width="956" height="535" alt="test_attendance" src="https://github.com/user-attachments/assets/31571862-3c70-484b-b814-84859d01c113" />
+
 4. #### Are home teams more/less affected by extreme weather?
 home_win_rain.sql 
+
+<img width="958" height="296" alt="test_homewin_rain" src="https://github.com/user-attachments/assets/21a6db88-5b72-450f-b513-27d09a211f68" />
+
    
 6. #### Does the number of fouls committed depend on weather conditions?
 fouls_commited.sql
 
+<img width="956" height="323" alt="test_fouls_committed" src="https://github.com/user-attachments/assets/61e018d5-ee75-4d3d-ba06-020592af7551" />
 
 
 8. #### Does bad weather impact penalty shootouts?
 penalty.sql
+
+<img width="946" height="259" alt="test_penalty_results" src="https://github.com/user-attachments/assets/b047fb66-2769-44a3-b07f-a85522a43871" />
