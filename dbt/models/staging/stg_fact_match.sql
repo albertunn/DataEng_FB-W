@@ -85,10 +85,8 @@ LEFT JOIN {{ ref('dim_date') }} AS dd
     ON halfMD5(toString(f.match_datetime) || '|' || toString(f.venue_id)) = dd.date_key
 LEFT JOIN {{ ref('dim_venue') }} AS dv
     ON f.venue_id = dv.venue_id
-LEFT JOIN {{ ref('dim_weather') }} AS dw
-    ON dw.weather_key = halfMD5(
-        toString(f.event_id) || '|' || toString(toStartOfHour(f.match_datetime))
-    )
+LEFT JOIN {{ ref('dim_weather') }} AS dw 
+    ON f.event_id = dw.event_id
 LEFT JOIN {{ ref('dim_team') }} AS th
     ON f.home_team_id = th.team_id
 LEFT JOIN {{ ref('dim_team') }} AS ta
