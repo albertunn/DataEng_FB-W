@@ -81,7 +81,15 @@ While Airflow handles orchestration, it is possible to use dbt manually as well.
 
 ---
 
-## Screenshots of Airflow and dbt DAGS
+## Screenshot of Airflow and dbt DAGS
+
+<img width="1867" height="324" alt="dags" src="https://github.com/user-attachments/assets/67bcc1a1-8109-4f48-8145-16d61516413c" />
+
+<img width="814" height="144" alt="graph_1" src="https://github.com/user-attachments/assets/5579db34-1d38-4a6a-8c6e-0fb2c99c19bd" />
+
+<img width="796" height="223" alt="graph_2" src="https://github.com/user-attachments/assets/67e78e36-636e-4327-91bf-f9de63a27433" />
+
+<img width="420" height="169" alt="graph_3" src="https://github.com/user-attachments/assets/fac04502-9bee-4437-9a15-bb2dae71be61" />
 
 ---
 
