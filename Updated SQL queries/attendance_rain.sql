@@ -4,9 +4,9 @@ SELECT
     v.venue_name,
     v.city,
     CASE
-        WHEN w.precipitation >= 7.6 THEN '4. Heavy Rain (≥ 7.6 mm/h)'
-        WHEN w.precipitation >= 2.5 AND w.precipitation < 7.6 THEN '3. Moderate Rain (2.5-7.6 mm/h)'
-        WHEN w.precipitation >= 0.2 AND w.precipitation < 2.5 THEN '2. Light Rain (0.2-2.5 mm/h)'
+        WHEN w.avg_precipitation >= 7.6 THEN '4. Heavy Rain (≥ 7.6 mm/h)'
+        WHEN w.avg_precipitation >= 2.5 AND w.avg_precipitation < 7.6 THEN '3. Moderate Rain (2.5-7.6 mm/h)'
+        WHEN w.avg_precipitation >= 0.2 AND w.avg_precipitation < 2.5 THEN '2. Light Rain (0.2-2.5 mm/h)'
         ELSE '1. Dry/Normal (< 0.2 mm/h)'
     END AS rain_category,
     

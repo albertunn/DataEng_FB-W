@@ -4,8 +4,8 @@
 SELECT
 
     CASE
-        WHEN w.wind_speed >= 36 THEN '1. Strong (≥ 36 km/h)'
-        WHEN w.wind_speed >= 20 AND w.wind_speed < 36 THEN '2. Moderate (20-36 km/h)'
+        WHEN w.avg_wind_speed >= 36 THEN '1. Strong (≥ 36 km/h)'
+        WHEN w.avg_wind_speed >= 20 AND w.avg_wind_speed < 36 THEN '2. Moderate (20-36 km/h)'
         ELSE '3. Light (< 20 km/h)'
     END AS wind_category,
     

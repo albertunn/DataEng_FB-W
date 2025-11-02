@@ -3,7 +3,7 @@
 SELECT
     CASE
         -- Extreme Weather: Heavy Rain (> 7.6 mm/h) OR Very Cold (< 5°C) OR Very Hot (> 25°C)
-        WHEN w.precipitation > 7.6 OR w.temperature < 5 OR w.temperature >= 25 THEN '1. Extreme Weather (Heavy Rain/Extreme Temp)'
+        WHEN w.avg_precipitation > 7.6 OR w.avg_temperature < 5 OR w.avg_temperature >= 25 THEN '1. Extreme Weather (Heavy Rain/Extreme Temp)'
         ELSE '2. Normal Weather'
     END AS weather_category,
 

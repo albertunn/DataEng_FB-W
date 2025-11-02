@@ -4,8 +4,8 @@
 SELECT
 
     CASE
-        WHEN w.temperature < 5 THEN '1. Cold (< 5°C)'
-        WHEN w.temperature >= 30 THEN '3. Hot (> 30°C)'
+        WHEN w.avg_temperature < 5 THEN '1. Cold (< 5°C)'
+        WHEN w.avg_temperature >= 30 THEN '3. Hot (> 30°C)'
         ELSE '2. Normal (5°C - 30°C)'
     END AS temperature_category,
     
