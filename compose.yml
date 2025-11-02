@@ -101,6 +101,7 @@ services:
       - ./airflow/orders:/tmp/data/orders
       - ./airflow/plugins:/opt/airflow/plugins
       - ./airflow/data:/opt/airflow/data
+      - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - "8080:8080"
     command: webserver
@@ -110,6 +111,7 @@ services:
   # Airflow Scheduler
   # --------------------
   airflow-scheduler:
+    user: root
     build:
       context: .
       dockerfile: Dockerfile.airflow
@@ -129,6 +131,7 @@ services:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/plugins:/opt/airflow/plugins
       - ./airflow/data:/opt/airflow/data
+      - /var/run/docker.sock:/var/run/docker.sock
     command: scheduler
     restart: always
 

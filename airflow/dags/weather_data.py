@@ -33,7 +33,7 @@ def geocode_unresolved_venues():
         geolocator = Nominatim(user_agent="espn_soccer_airflow_dag_v2", timeout=10)
         geocode = RateLimiter(geolocator.geocode, min_delay_seconds=1) 
         
-        VENUE_BATCH_SIZE = 50
+        VENUE_BATCH_SIZE = 200
         unresolved = client.execute(f"""
             SELECT v.venueId, v.fullName, v.city, v.country
             FROM bronze_venues v
@@ -97,7 +97,7 @@ def fetch_and_load_weather_data(data_dir, **context):
     except ImportError:
         raise ImportError("ERROR: open_meteo_client.py is required but not found.")
 
-    BATCH_SIZE = 600 # opean_meteo minute limit
+    BATCH_SIZE = 500
     client = None
     try:
         client = Client(host="clickhouse-server")
@@ -201,9 +201,8 @@ with DAG(
     dag_id='fetch_match_weather',
     default_args=default_args,
     description='Fetches historical weather for matches using geocoding and rate-limited Open-Meteo API.',
-    schedule=None,
+    schedule_interval=timedelta(minutes=72),
     catchup=False,
-    tags=['weather', 'soccer', 'api'],
 ) as dag:
 
     geocode_venues = PythonOperator(
