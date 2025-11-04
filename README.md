@@ -62,7 +62,7 @@ KAGGLE_KEY={token}`
 docker compose up -d --build
 ```
 3. #### Airflow: 
-Access at [http://localhost:8080](http://localhost:8080). Start the `update_kaggle_espn_soccer` DAG to begin the ingestion and transformation process.
+Access at [http://localhost:8080](http://localhost:8080). Username and password are both: `airflow`. Start the `update_kaggle_espn_soccer` DAG to begin the ingestion and transformation process.
 
 4. #### Clickhouse Client:
 To open interactive SQL session directly in the database, use:
