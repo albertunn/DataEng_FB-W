@@ -5,3 +5,5 @@ retry-requests
 openmeteo_requests 
 requests-cache 
 retry-requests
+s3fs>=2023.1.0
+pyarrow>=12.0.0

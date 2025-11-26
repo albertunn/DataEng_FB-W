@@ -1,7 +1,17 @@
 FROM apache/airflow:2.8.1
 
 USER airflow
-RUN pip install --no-cache-dir kaggle clickhouse-driver pandas numpy
+
+RUN pip install --no-cache-dir \
+    kaggle \
+    clickhouse-driver \
+    pandas \
+    numpy \
+    pyiceberg \
+    s3fs \
+    fsspec \
+    boto3 \
+    pyarrow 
 
 COPY --chown=airflow:root requirements.txt /requirements.txt
 RUN pip install --no-cache-dir -r /requirements.txt

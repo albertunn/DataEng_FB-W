@@ -11,6 +11,31 @@ def load_to_clickhouse(data_dir, run_date):
     print(f"🔹 Loading Bronze Layer data for {run_date} from {data_dir}")
     client = Client(host="clickhouse-server")
 
+    # Define the Iceberg insert SQL for fixtures table
+    FIXTURES_TARGET_COLUMNS = [
+        'Rn', 'seasonType', 'leagueId', 'eventId', 'date', 'venueId', 
+        'attendance', 'homeTeamId', 'awayTeamId', 'homeTeamWinner', 
+        'awayTeamWinner', 'homeTeamScore', 'awayTeamScore', 
+        'homeTeamShootoutScore', 'awayTeamShootoutScore', 
+        'statusId', 'updateTime', 'hasWeather', '_ingestion_time' 
+    ]
+
+    FIXTURES_SOURCE_COLUMNS = FIXTURES_TARGET_COLUMNS[:-2] 
+    
+    cols_str = ', '.join(f'`{c}`' for c in FIXTURES_TARGET_COLUMNS)
+    
+    select_parts = [f'toString(`{c}`)' for c in FIXTURES_SOURCE_COLUMNS]
+
+    select_parts.append("NULL AS `hasWeather`")
+    select_parts.append("now() AS `_ingestion_time`")
+    
+    select_cols_str = ', '.join(select_parts)
+    
+    ICEBERG_INSERT_SQL = (
+        f"INSERT INTO matchData.bronze_fixtures ({cols_str}) "
+        f"SELECT {select_cols_str} FROM matchData.iceberg_fixtures_readonly"
+    )
+
     try:
         client.execute("CREATE DATABASE IF NOT EXISTS matchData")
         client.execute("USE matchData")
@@ -136,7 +161,17 @@ def load_to_clickhouse(data_dir, run_date):
             if not os.path.exists(file_path):
                 print(f"Skipping {filename} (not found)")
                 continue
-
+            if table_name == "fixtures":
+                try:
+                    client.execute(ICEBERG_INSERT_SQL)
+                    print("Loaded fixtures from Iceberg (matchData.iceberg_fixtures_readonly) into bronze_fixtures")
+                    continue
+                except Exception as e:
+                    print(f"Iceberg view not available or insert failed: {e}; falling back to CSV for fixtures")
+                
+            if not os.path.exists(file_path):
+                print(f"Skipping {filename} (not found)")
+                continue    
             print(f"\nLoading {filename} into bronze_{table_name}...")
             df = pd.read_csv(file_path, dtype=str)
             df = df.astype(object).where(pd.notnull(df), None)
