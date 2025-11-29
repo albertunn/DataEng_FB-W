@@ -704,8 +704,6 @@ services:
       - ingestion-volume-dags:/opt/airflow/dags
       - ingestion-volume-tmp:/tmp
       - ./dbt/target:/opt/dbt/target
-      - ./dbt/dbt_ingestion_config.yml:/dbt/dbt_ingestion_config.yml
-
 volumes:
   pgdata_airflow:
   clickhouse_data:
