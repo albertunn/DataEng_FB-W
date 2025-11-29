@@ -703,7 +703,8 @@ services:
       - ingestion-volume-dag-airflow:/opt/airflow/dag_generated_configs
       - ingestion-volume-dags:/opt/airflow/dags
       - ingestion-volume-tmp:/tmp
-      - ./dbt/target:/opt/dbt/target
+      - ./dbt/target:/dbt/target
+      - ./dbt:/dbt
 volumes:
   pgdata_airflow:
   clickhouse_data:
