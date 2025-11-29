@@ -292,7 +292,7 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.11.4
     environment:
       - discovery.type=single-node
-      - ES_JAVA_OPTS=-Xms1024m -Xmx1024m
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
       - xpack.security.enabled=false
     ports:
       - "9200:9200"
@@ -703,6 +703,8 @@ services:
       - ingestion-volume-dag-airflow:/opt/airflow/dag_generated_configs
       - ingestion-volume-dags:/opt/airflow/dags
       - ingestion-volume-tmp:/tmp
+      - ./dbt/target:/opt/dbt/target
+      - ./dbt/dbt_ingestion_config.yml:/dbt/dbt_ingestion_config.yml
 
 volumes:
   pgdata_airflow:
