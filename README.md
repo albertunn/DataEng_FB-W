@@ -167,7 +167,7 @@ The following services must be running and configured before proceeding to the O
    
 #### 1. Clickhouse Security Setup
 
-1.1 Create User and Grant Permissions
+##### 1.1 Create User and Grant Permissions
 
 ```
 docker compose exec clickhouse-server clickhouse-client
