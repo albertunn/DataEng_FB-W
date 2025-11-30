@@ -174,7 +174,7 @@ def load_to_clickhouse(data_dir, run_date):
                 print(f"Skipping {filename} (not found)")
                 continue    
             print(f"\nLoading {filename} into bronze_{table_name}...")
-            df = pd.read_csv(file_path, dtype=str, nrows=100)
+            df = pd.read_csv(file_path, dtype=str)
             df = df.astype(object).where(pd.notnull(df), None)
             df = df.applymap(lambda x: str(x) if x is not None else None)
 

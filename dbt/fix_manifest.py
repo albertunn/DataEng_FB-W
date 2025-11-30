@@ -1,8 +1,13 @@
 import json
 import copy
 import os
+from pathlib import Path
 
-BASE_DIR = r"C:\Users\Karen\DataEng_FB-W\dbt\target"
+# Folder where this Python file is located
+CURRENT_DIR = Path(__file__).resolve().parent
+
+# Build path to target folder relative to this file
+BASE_DIR = CURRENT_DIR / "target"
 
 INPUT_FILE = os.path.join(BASE_DIR, "manifest.json")
 OUTPUT_FILE = os.path.join(BASE_DIR, "manifest.json")

@@ -62,7 +62,7 @@ KAGGLE_KEY={token}`
 docker compose up -d --build
 ```
 3. #### Airflow: 
-Access at [http://localhost:8080](http://localhost:8080). Username and password are both: `airflow`. Start the `update_kaggle_espn_soccer` DAG to begin the ingestion and transformation process.
+Access at [http://localhost:8080](http://localhost:8080). Username and password are both: `airflow`. Start the `update_kaggle_espn_soccer` DAG to begin the ingestion and transformation process. Due to API limitations the `fetch_match_weather` DAG only geocodes 200 venues and 500 matches worth of weather data (takes around 4 minutes) at once. Run this DAG multiple times to get more data (up to 10 000 API requests per day allowed for weather data).
 
 4. #### Clickhouse Client:
 To open interactive SQL session directly in the database, use:
@@ -71,7 +71,7 @@ docker compose exec clickhouse-server clickhouse-client
 ```
 ### Manual dbt Workflow
 
-While Airflow handles orchestration, it is possible to use dbt manually as well.
+While Airflow handles orchestration, it is possible to use dbt manually as well (or manually start the `dbt_run_daily` DAG).
 
 | Step | Command (Run from Host) | Purpose |
 |------|--------------------------|----------|
@@ -154,8 +154,7 @@ TODO
 
 ### Clickhouse
 
-TODO
-
+See step 5 in project setup.
 
 
 ### OpenMetaData
@@ -185,7 +184,7 @@ GRANT SELECT ON default_marts.* TO role_openmetadata;
 ```
 #### 2. OpenMetadata UI Configuration
 
-Log into the OpenMetadata UI at `localhost:8085`.
+Log into the OpenMetadata UI at `localhost:8585`.
 
 Username: `admin@open-metadata.org`
 
