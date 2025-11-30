@@ -144,29 +144,17 @@ penalty.sql
 
 ---
 
-## Project 3
-
----
-
-### Apache Iceberg
-
-TODO
-
-### Clickhouse
-
-See step 5 in project setup.
-
 
 ### OpenMetaData
 
 The following services must be running and configured before proceeding to the OpenMetadata setup:
-1. Docker is up and running
-2. Airflow DAGs initialized (Kaggle first, then the weather data)
-3. DBT Run Completed
-
+1. **Docker** is up and running
+2. **Airflow DAGs** initialized (Kaggle first, then the weather data)
+3. **DBT Run** completed
+   
 #### 1. Clickhouse Security Setup
 
-1.1 Create User and Grant Permissions
+##### 1.1 Create User and Grant Permissions
 
 ```
 docker compose exec clickhouse-server clickhouse-client
@@ -184,11 +172,10 @@ GRANT SELECT ON default_marts.* TO role_openmetadata;
 ```
 #### 2. OpenMetadata UI Configuration
 
-Log into the OpenMetadata UI at `localhost:8585`.
+Log into the OpenMetadata UI at: `http://localhost:8585`
 
-Username: `admin@open-metadata.org`
-
-Password: `admin`
+- **Username:** `admin@open-metadata.org`
+- **Password:** `admin`
 
 ##### 2.1 Add ClickHouse Database Service
 
@@ -207,7 +194,8 @@ This step registers the ClickHouse data source with OpenMetadata.
 5. Click Test Connection. If successful, click Next and Save the service.
 
 ##### 2.2 Metadata Agent Deployment
-Trigger the Metadata Agent (if it's not running automatically already). Once the Metadata Agent has successfully run, you should be able to see the tables and columns in OpenMetadata. After triggering the Metadata Agent, trigger the other agents (Usage, Lineage, Profiler) as well.
+Trigger the Metadata Agent (if it's not running automatically already). Once the Metadata Agent has successfully run, you should be able to see the tables and columns in OpenMetadata.  
+ After triggering the Metadata Agent, trigger the other agents (**Usage**, **Lineage**, **Profiler**) as well.
 
 ##### 2.3 DBT Manifest Fix and Description Import
 
@@ -234,15 +222,16 @@ python fix_manifest.py
 
 ###### 2.3.2 Automated Fix for Manifest File
 
-After fixing the manifest, set up the dbt agent in OpenMetadata to automatically import all model and column descriptions, as well as model lineage.
-  1. Go to the ClickHouse service you created.
-  2. Click + Add New Agent.
-  3. Select the dbt agent type.
-  4. Configure the agent to point to the location of the fixed manifest.json file (/dbt/target/manifest.json)
+After fixing the manifest, set up the dbt agent in OpenMetadata to automatically import all model and column descriptions:
+
+1. Go to the **ClickHouse service** you created.
+2. Click **+ Add New Agent**.
+3. Select the **dbt agent** type.
+4. Configure the agent to point to the location of the fixed manifest file: ` /dbt/target/manifest.json`.
+
      
 Validation: Check your tables in OpenMetadata. Column descriptions should now be automatically populated based on your dbt models.
 
-**Evidence**
 <p align="center">
   <img width="601" height="391" alt="tables" src="https://github.com/user-attachments/assets/b89c1601-57b2-4afc-a2d2-b92b19fa7acc" />
 </p>
@@ -268,75 +257,91 @@ Validation: Check your tables in OpenMetadata. Column descriptions should now be
 </p>
 
 
+#### 2.4 Data Quality Tests
 
-##### 2.4 Data Quality Tests
+We wrote **3 data quality tests**:
 
-We wrote 3 data quality tests:
-1. To validate dim_date's surrogate key is unique.
-2. To validate home_team_key is not null in fact_match table.
-3. To validate that away_goals in fact_match is not a negative number.
-<img width="548" height="429" alt="dq_tests" src="https://github.com/user-attachments/assets/91013aa6-100c-4f10-a321-42b12bdb77e3" />
+1. Validate that `dim_date`'s surrogate key is **unique**.
+2. Validate that `home_team_key` is **not null** in the `fact_match` table.
+3. Validate that `away_goals` in the `fact_match` table is **not a negative number**.
 
-##### 2.5  Register Superset Dashboard Service (see below)
+<p align="center">
+  <img width="548" height="429" alt="dq_tests" src="https://github.com/user-attachments/assets/91013aa6-100c-4f10-a321-42b12bdb77e3" />
+</p>
 
-Register the Superset connection to discover dashboards and link them to the underlying data tables.
-1. Go to Settings → Services → Dashboards.
-2. Click + Add New Service.
-3. Choose Superset.
+#### 2.5 Register Superset Dashboard Service (see below the Apache Superset Chapter)
+
+Register the Superset connection to discover dashboards and link them to the underlying data tables:
+
+1. Go to **Settings → Services → Dashboards**.
+2. Click **+ Add New Service**.
+3. Choose **Superset** as the service type.
 4. Fill in the connection details:
+   - **Host and Port:** `http://superset:8088`
+   - **Provider:** `db`
+   - **Username:** `admin`
+   - **Password:** `admin`
+5. Click **Test Connection** and **Save**.
 
-   
-5. Click Test Connection and Save.
-
-**Evidence**
-<br><br>
-<img width="673" height="571" alt="dasboard-on-openmetadata" src="https://github.com/user-attachments/assets/92ec84ec-ba02-4b2b-a141-80c56009efed" />
+<p align="center">
+  <img width="673" height="571" alt="dasboard-on-openmetadata" src="https://github.com/user-attachments/assets/92ec84ec-ba02-4b2b-a141-80c56009efed" />
+</p>
 
 ### Apache Superset
 
-NB! The superset-init service sometimes fails due to script line-ending issues (LF vs. CRLF). If superset-init throws errors, ensure all relevant Docker scripts (docker-init-with-deps.sh, jne.) are converted to the LF (Unix/Linux) format.
+NB! The superset-init service sometimes fails due to script line-ending issues (LF vs. CRLF). If superset-init throws errors, ensure all relevant Docker scripts (docker-init-with-deps.sh, docker-bootstrap.sh, and docker-init.sh) are converted to the LF (Unix/Linux) format.
 
-#### 1 Add ClickHouse Connection (for Visualization)
+#### 1. Add ClickHouse Connection (for Visualization)
 
-In Superset '(default login: username: admin, password: admin)', you need to register the database connection.
-1. Go to Settings → Database Connections.
-2. Click + Database.
-3. Choose ClickHouse Connect as the database type.
-4. Fill in connection details:
-* Host: clickhouse-server
-* Port: 8123
-* Username: default
-5. Test and Connect: Verify that tables are available for visualization.
+In Superset **(default login: username: `admin`, password: `admin`)**, you need to register the database connection:
 
-We created three stacked bar charts to answer **Business Question 1**: Are home teams more or less affected by extreme weather?
-* Categorised matches based on temperature, rainfall, and wind speed
-* Calculated the average home win percentage and home loss percentage for each weather category
+1. Go to **Settings → Database Connections**.
+2. Click **+ Database**.
+3. Choose **ClickHouse Connect** as the database type.
+4. Fill in the connection details:
+   - **Host:** `clickhouse-server`
+   - **Port:** `8123`
+   - **Username:** `default`
+5. **Test and Connect:** Verify that tables are available for visualization.
 
-To answer **Business Question 2**: Is the variability of match outcomes higher in extreme weather conditions?
-We created three summary tables showing:
-* the number of matches in each weather category
-* the average goal difference
-* the outcome variability using standard deviation
+---
 
-**Filters**
-We added a Country filter to analyse how weather impacts match outcomes across different countries.
+#### Business Question 1 — Home Team Performance vs Weather
 
-**Evidence**
+We created three stacked bar charts to answer **Business Question 1: Are home teams more or less affected by extreme weather?**
 
-Business Question 1 – without filter
+- Categorised matches based on **temperature**, **rainfall**, and **wind speed**  
+- Calculated the average **home win percentage** and **home loss percentage** for each weather category
+
+---
+
+#### Business Question 2 — Outcome Variability in Extreme Weather
+
+To answer **Business Question 2: Is the variability of match outcomes higher in extreme weather conditions?** we created three summary tables showing:
+
+- The **number of matches** in each weather category  
+- The **average goal difference**  
+- The **outcome variability** using **standard deviation**
+
+---
+
+#### Filters
+
+We added a **Country filter** to analyse how weather impacts match outcomes across different countries.
+
+#### Business Question 1 – without filter
 <p align="center">
   <img width="545" height="491" alt="bq_1_wo_filter" src="https://github.com/user-attachments/assets/c381dbd1-0254-403e-9a03-b05eb6d5a889" />
 </p>
 
-Business Question 1 – filtered for Argentina
+#### Business Question 1 – filtered for Argentina
 <p align="center">
   <img width="671" height="482" alt="bq_1_w_filter" src="https://github.com/user-attachments/assets/ce287abf-f341-4009-8034-bb5c2eaaaf0a" />
 </p>
 
-Business Question 2 – filtered for Argentina
+#### Business Question 2 – filtered for Argentina
 <p align="center">
   <img width="668" height="632" alt="bq_2_w_filter" src="https://github.com/user-attachments/assets/2f816282-9bcd-41e5-b43f-bd8ad941bc94" />
 </p>
-
 
 

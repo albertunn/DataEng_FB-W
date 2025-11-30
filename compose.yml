@@ -143,7 +143,7 @@ services:
     volumes: *superset-volumes
     healthcheck:
       disable: true
-    networks: # VÄLJA OLI PUUDU
+    networks: 
       - iceberg_network
 
   superset-worker:
@@ -166,7 +166,7 @@ services:
           "CMD-SHELL",
           "celery -A superset.tasks.celery_app:app inspect ping -d celery@$$HOSTNAME",
         ]
-    networks: # VÄLJA OLI PUUDU
+    networks: 
       - iceberg_network
 
   superset-worker-beat:
@@ -185,7 +185,7 @@ services:
     volumes: *superset-volumes
     healthcheck:
       disable: true
-    networks: # VÄLJA OLI PUUDU
+    networks: 
       - iceberg_network
 
   # --------------------
@@ -215,7 +215,6 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8123/ping"]
       interval: 5s
       retries: 20
-    # Must be on the same network to talk to minio and iceberg_rest
     networks:
       - iceberg_network
 
@@ -258,9 +257,7 @@ services:
       - ./airflow/plugins:/opt/airflow/plugins
       - ./airflow/data:/opt/airflow/data
     networks:
-      - iceberg_network # ADDED to ensure it can access Iceberg components
-    # ... (rest of the init block)
-    # The entrypoint/command is complex, ensure all dependent services are up before it runs
+      - iceberg_network 
     entrypoint: /bin/bash
     command:
       - -c
@@ -832,4 +829,5 @@ volumes:
   db_home:
     external: false
   redis:
+
     external: false

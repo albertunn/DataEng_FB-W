@@ -34,7 +34,6 @@ def load_to_clickhouse(data_dir, run_date):
     ICEBERG_INSERT_SQL = (
         f"INSERT INTO matchData.bronze_fixtures ({cols_str}) "
         f"SELECT {select_cols_str} FROM matchData.iceberg_fixtures_readonly"
-        f"LIMIT 50"
     )
 
     try:
