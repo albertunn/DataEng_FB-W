@@ -268,7 +268,7 @@ We wrote **3 data quality tests**:
   <img width="548" height="429" alt="dq_tests" src="https://github.com/user-attachments/assets/91013aa6-100c-4f10-a321-42b12bdb77e3" />
 </p>
 
-#### 2.5 Register Superset Dashboard Service
+#### 2.5 Register Superset Dashboard Service (see below the Apache Superset Chapter)
 
 Register the Superset connection to discover dashboards and link them to the underlying data tables:
 
