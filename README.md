@@ -143,6 +143,16 @@ penalty.sql
 <img width="1632" height="273" alt="575650483_1323332595663169_7199510167246905563_n" src="https://github.com/user-attachments/assets/b33a4ede-aae2-4587-8167-dbe9aaa5a05d" />
 
 ---
+### Apache Iceberg
+
+The fixtures.csv file is loaded into iceberg using the airflow pipeline.
+
+The data parquet is saved into minio accessible at http://localhost:9001.
+
+- **Username:** `minioadmin`
+- **Password:** `minioadmin`
+
+The table is loaded via PyIceberg. Then the airflow DAGs automatically load the data from Iceberg into Clickhouse. If loading the data into Iceberg should fail for unexpected reasons, the pipeline falls back to csv straight to clickhouse loading. 
 
 
 ### OpenMetaData
