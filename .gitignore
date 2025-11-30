@@ -6,3 +6,6 @@ airflow/dags/__pycache__/
 airflow/logs/
 dbt/logs/
 dbt/target/
+dbt/dbt_packages
+minio_data/
+minio_data/*

@@ -18,3 +18,7 @@ models:
 
       fact_match:
         +materialized: 'incremental'
+
+    analytics:
+      +schema: 'analytics' 
+      +materialized: 'view'

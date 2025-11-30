@@ -81,6 +81,14 @@ While Airflow handles orchestration, it is possible to use dbt manually as well.
 
 ---
 
+5. #### Create roles for analysts with full and limited views.
+
+Run `docker exec -it clickhouse-server clickhouse-client --multiquery --queries-file=/sql/roles_analytics/create_roles.sql` to create roles `analyst_full` and `analyst_limited`. Limited analyst gets pseudonymized data for rows `home_goals`, `away_goals` and `attendance` (chosen randomly, because this project doesn't contain any actually sensitive data).
+
+To login to clickhouse as user `user_limited` or `user_full` use command `docker exec -it clickhouse-server clickhouse-client --disable_suggestion -u user_* --password *_pw` (Replace `*` with the desired role)
+
+SQL files to see how roles with different permissions get different answers on the same data are located in `/SQL queries/roles_analytics` as `query_full.sql` and `query_limited.sql`.
+
 ## Screenshot of Airflow and dbt DAGS
 
 <img width="1867" height="324" alt="dags" src="https://github.com/user-attachments/assets/67bcc1a1-8109-4f48-8145-16d61516413c" />

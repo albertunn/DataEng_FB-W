@@ -1,8 +1,8 @@
 {{ config(materialized='view') }}
 
--- Keep only two weather records per match:
+-- We keep only two weather records per match:
 --  1) the record closest to the match time
---  2) the record immediately after the match time
+--  2) the one after it
 
 WITH weather_raw AS (
     SELECT
@@ -35,15 +35,17 @@ ranked_weather AS (
             PARTITION BY wr.event_id
             ORDER BY abs(dateDiff('second', wr.weather_datetime, f.match_datetime)) ASC
         ) AS closest_rank,
-        row_number() OVER (
+                row_number() OVER (
             PARTITION BY wr.event_id
             ORDER BY 
                 CASE 
                     WHEN wr.weather_datetime >= f.match_datetime THEN wr.weather_datetime
                     ELSE toDateTime('9999-12-31 00:00:00')
                 END ASC
-        ) AS after_rank
+        ) AS after_rank,
+        (f.match_datetime = toStartOfHour(f.match_datetime)) AS match_is_full_hour
     FROM weather_raw AS wr
+
     INNER JOIN fixtures AS f
         ON wr.event_id = f.event_id
 )
@@ -61,7 +63,10 @@ SELECT
     round(avg(snowfall), 3) AS snowfall,
     round(avg(wind_speed), 3) AS wind_speed
 FROM ranked_weather
-WHERE closest_rank = 1 OR after_rank = 1
+WHERE 
+    closest_rank = 1
+    OR after_rank = 1
+    OR (match_is_full_hour AND after_rank = 2)
 GROUP BY 
     event_id, 
     toStartOfHour(weather_datetime)
