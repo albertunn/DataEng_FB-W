@@ -1,5 +1,12 @@
 version: '3.8'
 
+x-superset-image: &superset-image apachesuperset.docker.scarf.sh/apache/superset:4.0.2
+x-superset-volumes:
+  &superset-volumes # /app/pythonpath_docker will be appended to the PYTHONPATH in the final container
+  - ./docker:/app/docker # optionally comment me out if having bash/r error - will need to manually install clickhouse_connect on Superset container
+  - ./superset-core:/app/superset-core # optionally comment me out if having bash/r error - will need to manually install clickhouse_connect on Superset container
+  - superset_home:/app/superset_home
+
 networks:
   iceberg_network:
     driver: bridge
@@ -74,6 +81,111 @@ services:
       PYICEBERG_CATALOG__REST__S3__SECRET-ACCESS-KEY: minioadmin
 
     networks:
+      - iceberg_network
+
+  redis:
+    image: redis:7
+    container_name: superset_cache
+    volumes:
+      - redis:/data
+    networks: 
+      - iceberg_network
+
+  
+  db:
+    env_file:
+      - path: docker/.env # default
+        required: true
+      - path: docker/.env-local # optional override
+        required: false
+    image: postgres:16
+    container_name: superset_db
+    volumes:
+      - db_home:/var/lib/postgresql/data
+      - ./docker/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    networks: 
+      - iceberg_network
+
+  superset:
+    env_file:
+      - path: docker/.env # default
+        required: true
+      - path: docker/.env-local # optional override
+        required: false
+    image: *superset-image
+    container_name: superset_app
+    command: ["/app/docker/docker-bootstrap.sh", "app-gunicorn"]
+    user: "root"
+    ports:
+      - 8088:8088
+    depends_on:
+      superset-init:
+        condition: service_completed_successfully
+    volumes: *superset-volumes
+    networks: 
+      - iceberg_network
+
+  superset-init:
+    image: *superset-image
+    container_name: superset_init
+    command: ["/app/docker/docker-init-with-deps.sh"]
+    env_file:
+      - path: docker/.env # default
+        required: true
+      - path: docker/.env-local # optional override
+        required: false
+    depends_on:
+      db:
+        condition: service_started
+      redis:
+        condition: service_started
+    user: "root"
+    volumes: *superset-volumes
+    healthcheck:
+      disable: true
+    networks: # VÄLJA OLI PUUDU
+      - iceberg_network
+
+  superset-worker:
+    image: *superset-image
+    container_name: superset_worker
+    command: ["/app/docker/docker-bootstrap.sh", "worker"]
+    env_file:
+      - path: docker/.env # default
+        required: true
+      - path: docker/.env-local # optional override
+        required: false
+    depends_on:
+      superset-init:
+        condition: service_completed_successfully
+    user: "root"
+    volumes: *superset-volumes
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "celery -A superset.tasks.celery_app:app inspect ping -d celery@$$HOSTNAME",
+        ]
+    networks: # VÄLJA OLI PUUDU
+      - iceberg_network
+
+  superset-worker-beat:
+    image: *superset-image
+    container_name: superset_worker_beat
+    command: ["/app/docker/docker-bootstrap.sh", "beat"]
+    env_file:
+      - path: docker/.env # default
+        required: true
+      - path: docker/.env-local # optional override
+        required: false
+    depends_on:
+      superset-init:
+        condition: service_completed_successfully
+    user: "root"
+    volumes: *superset-volumes
+    healthcheck:
+      disable: true
+    networks: # VÄLJA OLI PUUDU
       - iceberg_network
 
   # --------------------
@@ -705,6 +817,7 @@ services:
       - ingestion-volume-tmp:/tmp
       - ./dbt/target:/dbt/target
       - ./dbt:/dbt
+
 volumes:
   pgdata_airflow:
   clickhouse_data:
@@ -714,3 +827,9 @@ volumes:
   es-data:
   postgres-db:
   minio_data:
+  superset_home:
+    external: false
+  db_home:
+    external: false
+  redis:
+    external: false
