@@ -231,7 +231,6 @@ After fixing the manifest, set up the dbt agent in OpenMetadata to automatically
      
 Validation: Check your tables in OpenMetadata. Column descriptions should now be automatically populated based on your dbt models.
 
-**Evidence**
 <p align="center">
   <img width="601" height="391" alt="tables" src="https://github.com/user-attachments/assets/b89c1601-57b2-4afc-a2d2-b92b19fa7acc" />
 </p>
@@ -281,7 +280,6 @@ Register the Superset connection to discover dashboards and link them to the und
    - **Password:** `admin`
 5. Click **Test Connection** and **Save**.
 
-**Evidence**
 <br>
 <img width="673" height="571" alt="dasboard-on-openmetadata" src="https://github.com/user-attachments/assets/92ec84ec-ba02-4b2b-a141-80c56009efed" />
 
@@ -327,8 +325,6 @@ To answer **Business Question 2: Is the variability of match outcomes higher in 
 
 We added a **Country filter** to analyse how weather impacts match outcomes across different countries.
 
-
-**Evidence**
 #### Business Question 1 – without filter
 <p align="center">
   <img width="545" height="491" alt="bq_1_wo_filter" src="https://github.com/user-attachments/assets/c381dbd1-0254-403e-9a03-b05eb6d5a889" />
