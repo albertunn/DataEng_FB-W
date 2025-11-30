@@ -134,3 +134,27 @@ penalty.sql
 
 <img width="1632" height="273" alt="575650483_1323332595663169_7199510167246905563_n" src="https://github.com/user-attachments/assets/b33a4ede-aae2-4587-8167-dbe9aaa5a05d" />
 
+---
+
+## Project 3
+
+---
+
+### Apache Iceberg
+
+TODO
+
+### Clickhouse
+
+TODO
+
+
+
+### OpenMetaData
+
+
+
+### Apache Superset
+
+
+
