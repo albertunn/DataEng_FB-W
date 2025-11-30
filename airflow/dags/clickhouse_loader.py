@@ -34,6 +34,7 @@ def load_to_clickhouse(data_dir, run_date):
     ICEBERG_INSERT_SQL = (
         f"INSERT INTO matchData.bronze_fixtures ({cols_str}) "
         f"SELECT {select_cols_str} FROM matchData.iceberg_fixtures_readonly"
+        f"LIMIT 50"
     )
 
     try:
@@ -173,7 +174,7 @@ def load_to_clickhouse(data_dir, run_date):
                 print(f"Skipping {filename} (not found)")
                 continue    
             print(f"\nLoading {filename} into bronze_{table_name}...")
-            df = pd.read_csv(file_path, dtype=str)
+            df = pd.read_csv(file_path, dtype=str, nrows=100)
             df = df.astype(object).where(pd.notnull(df), None)
             df = df.applymap(lambda x: str(x) if x is not None else None)
 
