@@ -264,7 +264,9 @@ We wrote **3 data quality tests**:
 2. Validate that `home_team_key` is **not null** in the `fact_match` table.
 3. Validate that `away_goals` in the `fact_match` table is **not a negative number**.
 
-<img width="548" height="429" alt="dq_tests" src="https://github.com/user-attachments/assets/91013aa6-100c-4f10-a321-42b12bdb77e3" />
+<p align="center">
+  <img width="548" height="429" alt="dq_tests" src="https://github.com/user-attachments/assets/91013aa6-100c-4f10-a321-42b12bdb77e3" />
+</p>
 
 #### 2.5 Register Superset Dashboard Service
 
@@ -280,8 +282,9 @@ Register the Superset connection to discover dashboards and link them to the und
    - **Password:** `admin`
 5. Click **Test Connection** and **Save**.
 
-<br>
-<img width="673" height="571" alt="dasboard-on-openmetadata" src="https://github.com/user-attachments/assets/92ec84ec-ba02-4b2b-a141-80c56009efed" />
+<p align="center">
+  <img width="673" height="571" alt="dasboard-on-openmetadata" src="https://github.com/user-attachments/assets/92ec84ec-ba02-4b2b-a141-80c56009efed" />
+</p>
 
 ### Apache Superset
 
