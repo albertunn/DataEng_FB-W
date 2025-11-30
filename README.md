@@ -301,7 +301,7 @@ Register the Superset connection to discover dashboards and link them to the und
 
 ### Apache Superset
 
-NB! The superset-init service sometimes fails due to script line-ending issues (LF vs. CRLF). If superset-init throws errors, ensure all relevant Docker scripts (docker-init-with-deps.sh, jne.) are converted to the LF (Unix/Linux) format.
+NB! The superset-init service sometimes fails due to script line-ending issues (LF vs. CRLF). If superset-init throws errors, ensure all relevant Docker scripts (docker-init-with-deps.sh, docker-bootstrap.sh, and docker-init.sh) are converted to the LF (Unix/Linux) format.
 
 #### 1. Add ClickHouse Connection (for Visualization)
 
