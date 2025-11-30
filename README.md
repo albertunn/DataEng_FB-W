@@ -144,20 +144,6 @@ penalty.sql
 
 ---
 
-## Project 3
-
----
-
-### Apache Iceberg
-
-TODO
-
-### Clickhouse
-
-TODO
-
-
-
 ### OpenMetaData
 
 The following services must be running and configured before proceeding to the OpenMetadata setup:
